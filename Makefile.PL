@@ -1,6 +1,6 @@
 #-------------------------------------------------------
 #
-# $Id: Makefile.PL,v 1.5 1998/03/03 21:53:45 mergl Exp $
+# $Id: Makefile.PL,v 1.10 1998/03/06 22:06:18 mergl Exp $
 #
 # Copyright (c) 1997  Edmund Mergl
 #
@@ -33,8 +33,8 @@ if (-d "$ENV{POSTGRES_HOME}/lib") {
 my %opts = (
     NAME         => 'Pg',
     VERSION_FROM => 'Pg.pm',
-    INC	         =>  "-I$ENV{POSTGRES_HOME}/include -I/usr/local/include/pgsql -I/usr/include/pgsql",
-    LIBS         => ["-L$ENV{POSTGRES_HOME}/lib -lpq"],
+    INC	         => "-I$ENV{POSTGRES_HOME}/include -I/usr/local/include/pgsql -I/usr/include/pgsql",
+    OBJECT       => "Pg\$(OBJ_EXT) $ENV{POSTGRES_HOME}/lib/libpq.a",
 );
 
 

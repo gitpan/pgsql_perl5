@@ -1,5 +1,8 @@
 Revision history for Perl extension Pg.
 
+1.7.2   Mar 06 1998
+	- module is now linked with static libpq.a
+
 1.7.1   Mar 03 1998
 	- expanded the search path for include files
 	- return to UNIX domain sockets in test-scripts
