@@ -1,6 +1,8 @@
+#!/usr/local/bin/perl -w
+
 #-------------------------------------------------------
 #
-# $Id: test.pl.oldstyle,v 1.2 1997/06/02 19:16:18 mergl Exp $
+# $Id: example.oldstyle,v 1.2 1997/09/25 20:52:18 mergl Exp $
 #
 # Copyright (c) 1997  Edmund Mergl
 #
@@ -11,7 +13,7 @@
 
 ######################### We start with some black magic to print on failure.
 
-BEGIN { $| = 1; print "1..60\n"; }
+BEGIN { $| = 1; print "1..61\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Pg;
 $loaded = 1;
@@ -51,6 +53,7 @@ $| = 1;
 #	PQfsize()
 #	PQcmdStatus()
 #	PQoidStatus()
+#	PQcmdTuples()
 #	PQgetvalue()
 #	PQclear()
 #	PQprint()
@@ -145,7 +148,8 @@ $result = PQexec($conn, "COPY person TO STDOUT");
 cmp_eq(PGRES_COPY_OUT, PQresultStatus($result));
 PQclear($result);
 
-$i = 1;
+$i   = 1;
+$ret = 0;
 while (-1 != $ret) {
     $ret = PQgetline($conn, $string, 256);
     last if $string eq "\\.";
@@ -156,7 +160,7 @@ while (-1 != $ret) {
 cmp_eq(0, PQendcopy($conn));
 
 ######################### delete and copy from stdin, PQputline
-# 28-33
+# 28-34
 
 $result = PQexec($conn, "BEGIN");
 cmp_eq(PGRES_COMMAND_OK, PQresultStatus($result));
@@ -164,7 +168,8 @@ PQclear($result);
 
 $result = PQexec($conn, "DELETE FROM person");
 cmp_eq(PGRES_COMMAND_OK, PQresultStatus($result));
-cmp_eq("DELETE", PQcmdStatus($result));
+cmp_eq("DELETE 5", PQcmdStatus($result));
+cmp_eq("5", PQcmdTuples($result));
 PQclear($result);
 
 $result = PQexec($conn, "COPY person FROM STDIN");
@@ -184,7 +189,7 @@ cmp_eq(PGRES_COMMAND_OK, PQresultStatus($result));
 PQclear($result);
 
 ######################### select from person, PQgetvalue
-# 34-47
+# 35-48
 
 $result = PQexec($conn, "SELECT * FROM person");
 cmp_eq(PGRES_TUPLES_OK, PQresultStatus($result));
@@ -218,7 +223,7 @@ for ($k = 0; $k < PQntuples($result); $k++) {
 PQclear($result);
 
 ######################### PQnotifies
-# 48-50
+# 49-51
 
 if (! defined($pid = fork)) {
     die "can not fork: $!";
@@ -247,7 +252,7 @@ while (1) {
 cmp_eq("person", $table);
 
 ######################### PQprint
-# 51-52
+# 52-53
 
 $result = PQexec($conn, "SELECT name FROM person WHERE id = 2");
 cmp_eq(PGRES_TUPLES_OK, PQresultStatus($result));
@@ -258,9 +263,9 @@ PQclear($result);
 close(PRINT) || die "bad PRINT: $!";
 
 ######################### PQlo_import, PQlo_export, PQlo_unlink
-# 53-59
+# 54-60
 
-$filename = 'typemap';
+$filename = 'ApachePg.pl';
 $cwd = `pwd`;
 chop $cwd;
 
@@ -290,7 +295,7 @@ if ($DEBUG) {
 }
 
 ######################### disconnect and drop test database
-# 59-60
+# 60-61
 
 PQfinish($conn);
 
@@ -305,7 +310,7 @@ PQfinish($conn);
 
 ######################### hopefully
 
-print "all tests passed.\n" if 61 == $cnt;
+print "test sequence finished.\n" if 62 == $cnt;
 
 ######################### utility functions
 

@@ -1,6 +1,8 @@
+#!/usr/local/bin/perl -w
+
 #-------------------------------------------------------
 #
-# $Id: test.pl,v 1.2 1997/06/02 19:16:18 mergl Exp $
+# $Id: test.pl,v 1.6 1997/09/25 20:52:15 mergl Exp $
 #
 # Copyright (c) 1997  Edmund Mergl
 #
@@ -11,7 +13,7 @@
 
 ######################### We start with some black magic to print on failure.
 
-BEGIN { $| = 1; print "1..49\n"; }
+BEGIN { $| = 1; print "1..50\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Pg;
 $loaded = 1;
@@ -52,6 +54,7 @@ $| = 1;
 #	fsize
 #	cmdStatus
 #	oidStatus
+#	cmdTuples
 #	getvalue
 
 ######################### the following methods will not be tested
@@ -85,7 +88,7 @@ $SIG{PIPE} = sub { print "broken pipe\n" };
 ######################### create and connect to test database
 # 2-4
 
-$conn = Pg::connectdb("dbname = $dbmain");
+$conn = Pg::connectdb("dbname=$dbmain");
 cmp_eq(PGRES_CONNECTION_OK, $conn->status);
 
 # might fail if $dbname doesn't exist => don't check resultStatus
@@ -94,7 +97,7 @@ $result = $conn->exec("DROP DATABASE $dbname");
 $result = $conn->exec("CREATE DATABASE $dbname");
 cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
 
-$conn = Pg::connectdb("dbname = $dbname");
+$conn = Pg::connectdb("dbname=$dbname");
 cmp_eq(PGRES_CONNECTION_OK, $conn->status);
 
 ######################### debug, PQtrace
@@ -138,7 +141,8 @@ for ($i = 1; $i <= 5; $i++) {
 $result = $conn->exec("COPY person TO STDOUT");
 cmp_eq(PGRES_COPY_OUT, $result->resultStatus);
 
-$i = 1;
+$i   = 1;
+$ret = 0;
 while (-1 != $ret) {
     $ret = $conn->getline($string, 256);
     last if $string eq "\\.";
@@ -149,14 +153,15 @@ while (-1 != $ret) {
 cmp_eq(0, $conn->endcopy);
 
 ######################### delete and copy from stdin, PQputline
-# 28-33
+# 28-34
 
 $result = $conn->exec("BEGIN");
 cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
 
 $result = $conn->exec("DELETE FROM person");
 cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
-cmp_eq("DELETE", $result->cmdStatus);
+cmp_eq("DELETE 5", $result->cmdStatus);
+cmp_eq("5", $result->cmdTuples);
 
 $result = $conn->exec("COPY person FROM STDIN");
 cmp_eq(PGRES_COPY_IN, $result->resultStatus);
@@ -173,7 +178,7 @@ $result = $conn->exec("END");
 cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
 
 ######################### select from person, PQgetvalue
-# 34-47
+# 35-48
 
 $result = $conn->exec("SELECT * FROM person");
 cmp_eq(PGRES_TUPLES_OK, $result->resultStatus);
@@ -212,9 +217,9 @@ if ($DEBUG) {
 }
 
 ######################### disconnect and drop test database
-# 48-49
+# 49-50
 
-$conn = Pg::connectdb("dbname = $dbmain");
+$conn = Pg::connectdb("dbname=$dbmain");
 cmp_eq(PGRES_CONNECTION_OK, $conn->status);
 
 $result = $conn->exec("DROP DATABASE $dbname");
@@ -222,7 +227,7 @@ cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
 
 ######################### hopefully
 
-print "all tests passed.\n" if 50 == $cnt;
+print "test sequence finished.\n" if 51 == $cnt;
 
 ######################### utility functions
 
