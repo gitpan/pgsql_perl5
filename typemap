@@ -1,8 +1,8 @@
 #-------------------------------------------------------
 #
-# $Id: typemap,v 1.3 1998/02/20 20:55:03 mergl Exp $
+# $Id: typemap,v 1.5 1998/09/11 18:13:48 mergl Exp $
 #
-# Copyright (c) 1997  Edmund Mergl
+# Copyright (c) 1997, 1998  Edmund Mergl
 #
 #-------------------------------------------------------
 
@@ -15,5 +15,4 @@ PG_results	T_PTROBJ
 ConnStatusType	T_IV
 ExecStatusType	T_IV
 Oid		T_IV
-int2		T_IV
-bool		T_IV
+pqbool		T_IV

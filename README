@@ -1,15 +1,15 @@
 #-------------------------------------------------------
 #
-# $Id: README,v 1.12 1998/03/28 06:21:54 mergl Exp $
+# $Id: README,v 1.17 1999/01/14 18:44:08 mergl Exp $
 #
-# Copyright (c) 1997  Edmund Mergl
+# Copyright (c) 1997, 1998  Edmund Mergl
 #
 #-------------------------------------------------------
 
 DESCRIPTION:
 ------------
 
-This is version 1.7.3 of pgsql_perl5 (previously called pg95perl5).
+This is version 1.8.1 of pgsql_perl5 (previously called pg95perl5).
 
 Pgsql_perl5 is an interface between Larry Wall's language perl version 5 and 
 the database PostgreSQL (previously Postgres95). This has been done by using 
@@ -22,6 +22,9 @@ interface and a new one, using a more Perl-ish like style. The old style
 has the benefit, that existing Libpq applications can easily be ported to 
 perl. The new style uses class packages and might be more familiar for C++-
 programmers. 
+
+NOTE: it is planned to drop the old C-style interface in the next major release 
+      of PostgreSQL. 
 
 
 
@@ -36,7 +39,7 @@ License or the Artistic License, as specified in the Perl README file.
 IF YOU HAVE PROBLEMS:
 ---------------------
 
-Please send comments and bug-reports to <E.Mergl@bawue.de>
+Please send comments and bug-reports to <pgsql-interfaces@postgresql.org>
 
 Please include the output of perl -v,
                          and perl -V,
@@ -48,8 +51,8 @@ in your bug-report.
 REQUIREMENTS:
 -------------
 
-  - build, test and install Perl 5         (at least 5.002)
-  - build, test and install PostgreSQL     (at least 6.3)
+  - build, test and install Perl5          (at least 5.002)
+  - build, test and install PostgreSQL     (at least 6.4)
 
 
 PLATFORMS:
@@ -63,13 +66,12 @@ PLATFORMS:
 INSTALLATION:
 -------------
 
-Using dynamic loading for perl extensions, the preferred method is to unpack 
-the tar file outside the perl source tree. This assumes, that you already 
-have installed perl5.
+Building the perl interface stand-alone, you need to set the environment 
+variable POSTGRES_HOME, pointing to the PostgreSQL home-directory. 
+Also PostgreSQL needs to be installed having the include files in 
+$POSTGRES_HOME/include and the libs in $POSTGRES_HOME/lib. Then you have to 
+build the module as any standard perl-module with the following commands: 
 
-The Makefile checks the environment variable POSTGRES_HOME as well some 
-standard locations, to find the root directory of your Postgres installation. 
- 
 1.   perl Makefile.PL
 2.   make
 3.   make test
@@ -117,7 +119,6 @@ HP users: if you get error messages like:
           Dan Lauterbach <danla@dimensional.com>
 
 
-
 DOCUMENTATION:
 --------------
 
@@ -127,6 +128,6 @@ installation to read the documentation.
 
 ---------------------------------------------------------------------------
 
-   Edmund Mergl <E.Mergl@bawue.de>                       March 28, 1998
+   Edmund Mergl <E.Mergl@bawue.de>                       January 14, 1999
 
 ---------------------------------------------------------------------------
