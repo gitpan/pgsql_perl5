@@ -1,6 +1,6 @@
 #-------------------------------------------------------
 #
-# $Id: Pg.pm,v 1.11 1998/03/06 21:18:21 mergl Exp $
+# $Id: Pg.pm,v 1.12 1998/03/28 06:21:54 mergl Exp $
 #
 # Copyright (c) 1997  Edmund Mergl
 #
@@ -84,7 +84,7 @@ require 5.002;
 	PGRES_InvalidOid
 );
 
-$Pg::VERSION = '1.7.2';
+$Pg::VERSION = '1.7.3';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()

@@ -1,5 +1,9 @@
 Revision history for Perl extension Pg.
 
+1.7.3   Mar 28 1998
+	- linking again with the shared version of libpq 
+	  due to problems on several operating systems.
+
 1.7.2   Mar 06 1998
 	- module is now linked with static libpq.a
 
