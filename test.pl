@@ -2,7 +2,7 @@
 
 #-------------------------------------------------------
 #
-# $Id: test.pl,v 1.6 1997/09/25 20:52:15 mergl Exp $
+# $Id: test.pl,v 1.9 1998/03/03 21:53:45 mergl Exp $
 #
 # Copyright (c) 1997  Edmund Mergl
 #
@@ -13,7 +13,7 @@
 
 ######################### We start with some black magic to print on failure.
 
-BEGIN { $| = 1; print "1..50\n"; }
+BEGIN { $| = 1; print "1..45\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Pg;
 $loaded = 1;
@@ -34,7 +34,6 @@ $| = 1;
 #	connectdb
 #	db
 #	user
-#	host
 #	port
 #	finish
 #	status
@@ -63,6 +62,7 @@ $| = 1;
 #	conndefaults
 #	reset
 #	options
+#	host
 #	tty
 #	getlength
 #	getisnull
@@ -108,7 +108,7 @@ if ($DEBUG) {
 }
 
 ######################### check PGconn
-# 5-8
+# 5-7
 
 $db = $conn->db;
 cmp_eq($dbname, $db);
@@ -116,14 +116,11 @@ cmp_eq($dbname, $db);
 $user = $conn->user;
 cmp_ne("", $user);
 
-$host = $conn->host;
-cmp_ne("", $host);
-
 $port = $conn->port;
 cmp_ne("", $port);
 
 ######################### create and insert into table
-# 9-20
+# 8-19
 
 $result = $conn->exec("CREATE TABLE person (id int4, name char16)");
 cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
@@ -136,7 +133,7 @@ for ($i = 1; $i <= 5; $i++) {
 }
 
 ######################### copy to stdout, PQgetline
-# 21-27
+# 20-26
 
 $result = $conn->exec("COPY person TO STDOUT");
 cmp_eq(PGRES_COPY_OUT, $result->resultStatus);
@@ -153,7 +150,7 @@ while (-1 != $ret) {
 cmp_eq(0, $conn->endcopy);
 
 ######################### delete and copy from stdin, PQputline
-# 28-34
+# 27-33
 
 $result = $conn->exec("BEGIN");
 cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
@@ -178,7 +175,7 @@ $result = $conn->exec("END");
 cmp_eq(PGRES_COMMAND_OK, $result->resultStatus);
 
 ######################### select from person, PQgetvalue
-# 35-48
+# 34-43
 
 $result = $conn->exec("SELECT * FROM person");
 cmp_eq(PGRES_TUPLES_OK, $result->resultStatus);
@@ -200,14 +197,11 @@ for ($k = 0; $k < $result->nfields; $k++) {
     cmp_eq($k, $fnumber);
 }
 
-for ($k = 0; $k < $result->ntuples; $k++) {
-    $string = "";
-    for ($l = 0; $l < $result->nfields; $l++) {
-        $string .= $result->getvalue($k, $l) . " ";
-    }
-    $i = $k + 1;
-    cmp_eq("$i Edmund Mergl ", $string);
+$string = "";
+while (@row = $result->fetchrow) {
+    $string = join(" ", @row);
 }
+cmp_eq("5 Edmund Mergl", $string);
 
 ######################### debug, PQuntrace
 
@@ -217,7 +211,7 @@ if ($DEBUG) {
 }
 
 ######################### disconnect and drop test database
-# 49-50
+# 44-45
 
 $conn = Pg::connectdb("dbname=$dbmain");
 cmp_eq(PGRES_CONNECTION_OK, $conn->status);
