@@ -1,6 +1,6 @@
 #-------------------------------------------------------
 #
-# $Id: Pg.pm,v 1.15 1998/12/13 08:27:23 mergl Exp $
+# $Id: Pg.pm,v 1.18 2000/04/04 19:41:52 mergl Exp $
 #
 # Copyright (c) 1997, 1998  Edmund Mergl
 #
@@ -15,73 +15,12 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
 require Exporter;
 require DynaLoader;
 require AutoLoader;
-require 5.002;
+require 5.003;
 
 @ISA = qw(Exporter DynaLoader);
 
 # Items to export into callers namespace by default.
 @EXPORT = qw(
-	PQconnectdb
-	PQsetdbLogin
-	PQsetdb
-	PQconndefaults
-	PQfinish
-	PQreset
-	PQrequestCancel
-	PQdb
-	PQuser
-	PQpass
-	PQhost
-	PQport
-	PQtty
-	PQoptions
-	PQstatus
-	PQerrorMessage
-	PQsocket
-	PQbackendPID
-	PQtrace
-	PQuntrace
-	PQexec
-	PQnotifies
-	PQsendQuery
-	PQgetResult
-	PQisBusy
-	PQconsumeInput
-	PQgetline
-	PQputline
-	PQgetlineAsync
-	PQputnbytes
-	PQendcopy
-	PQmakeEmptyPGresult
-	PQresultStatus
-	PQntuples
-	PQnfields
-	PQbinaryTuples
-	PQfname
-	PQfnumber
-	PQftype
-	PQfsize
-	PQfmod
-	PQcmdStatus
-	PQoidStatus
-	PQcmdTuples
-	PQgetvalue
-	PQgetlength
-	PQgetisnull
-	PQclear
-	PQprint
-	PQdisplayTuples
-	PQprintTuples
-	PQlo_open
-	PQlo_close
-	PQlo_read
-	PQlo_write
-	PQlo_lseek
-	PQlo_creat
-	PQlo_tell
-	PQlo_unlink
-	PQlo_import
-	PQlo_export
 	PGRES_CONNECTION_OK
 	PGRES_CONNECTION_BAD
 	PGRES_EMPTY_QUERY
@@ -99,7 +38,7 @@ require 5.002;
 	PGRES_InvalidOid
 );
 
-$Pg::VERSION = '1.8.1';
+$Pg::VERSION = '1.9.0';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -110,13 +49,12 @@ sub AUTOLOAD {
     ($constname = $AUTOLOAD) =~ s/.*:://;
     my $val = constant($constname, @_ ? $_[0] : 0);
     if ($! != 0) {
-	if ($! =~ /Invalid/) {
-	    $AutoLoader::AUTOLOAD = $AUTOLOAD;
-	    goto &AutoLoader::AUTOLOAD;
-	}
-	else {
-		croak "Your vendor has not defined Pg macro $constname";
-	}
+        if ($! =~ /Invalid/) {
+            $AutoLoader::AUTOLOAD = $AUTOLOAD;
+            goto &AutoLoader::AUTOLOAD;
+        } else {
+            croak "Your vendor has not defined Pg macro $constname";
+        }
     }
     eval "sub $AUTOLOAD { $val }";
     goto &$AUTOLOAD;
@@ -131,6 +69,8 @@ sub doQuery {
     my $array_ref = shift;
 
     my ($result, $status, $i, $j);
+
+    $$array_ref[0][0] = '';
 
     if ($result = $conn->exec($query)) {
         if (2 == ($status = $result->resultStatus)) {
@@ -157,69 +97,34 @@ Pg - Perl5 extension for PostgreSQL
 
 =head1 SYNOPSIS
 
-new style:
-
     use Pg;
     $conn = Pg::connectdb("dbname=template1");
-    $result = $conn->exec("create database pgtest");
-
-
-old style (depreciated):
-
-    use Pg;
-    $conn = PQsetdb('', '', '', '', template1);
-    $result = PQexec($conn, "create database pgtest");
-    PQclear($result);
-    PQfinish($conn);
+    $res  = $conn->exec("SELECT * from pg_user");
+    while (@row = $res->fetchrow) {
+        print = join(" ", @row);
+    }
 
 
 =head1 DESCRIPTION
 
 The Pg module permits you to access all functions of the 
 Libpq interface of PostgreSQL. Libpq is the programmer's 
-interface to PostgreSQL. Pg tries to resemble this 
-interface as close as possible. For examples of how to 
-use this module, look at the file test.pl. For further 
-examples look at the Libpq applications in 
-../src/test/examples and ../src/test/regress. 
-
-You have the choice between the old C-style and a 
-new, more Perl-ish style. The old style has the 
-benefit, that existing Libpq applications can be 
-ported to perl just by prepending every variable 
-with a '$'. The new style uses class packages and 
-might be more familiar for C++-programmers. 
+interface to PostgreSQL. For examples of how to 
+use this module, look at the file test.pl. 
 
 
 =head1 GUIDELINES
 
-=head2 new style
-
-The new style uses blessed references as objects. 
+This perl interface uses blessed references as objects. 
 After creating a new connection or result object, 
 the relevant Libpq functions serve as virtual methods. 
-One benefit of the new style: you do not have to care 
-about freeing the connection- and result-structures. 
-Perl calls the destructor whenever the last reference 
-to an object goes away. 
+You do not have to care about freeing the connection- 
+and result-structures. Perl calls the destructor whenever 
+the last reference to an object goes away. 
 
 The method fetchrow can be used to fetch the next row from 
 the server: while (@row = $result->fetchrow).
 Columns which have NULL as value will be set to C<undef>.
-
-
-=head2 old style
-
-All functions and constants are imported into the calling 
-packages name-space. In order to to get a uniform naming, 
-all functions start with 'PQ' (e.g. PQlo_open) and all 
-constants start with 'PGRES_' (e.g. PGRES_CONNECTION_OK). 
-
-There are two functions, which allocate memory, that has 
-to be freed by the user: 
-
-    PQsetdb, use PQfinish to free memory.
-    PQexec,  use PQclear to free memory.
 
 Pg.pm contains one convenience function: doQuery. It fills a
 two-dimensional array with the result of your query. Usage:
@@ -234,14 +139,6 @@ two-dimensional array with the result of your query. Usage:
     }
 
 Notice the inner loop !
-
-
-=head1 CAVEATS
-
-There are few exceptions, where the perl-functions differs 
-from the C-counterpart: PQprint, PQnotifies and PQconndefaults. 
-These functions deal with structures, which have been 
-implemented in perl using lists or hash. 
 
 
 =head1 FUNCTIONS
@@ -280,6 +177,8 @@ Opens a new connection to the backend. The connection identifier $conn
 ( a pointer to the PGconn structure ) must be used in subsequent commands 
 for unique identification. Before using $conn you should call $conn->status 
 to ensure, that the connection was properly made. 
+Closing a connection is done by deleting the connection handle, eg
+'undef $conn;'.
 
     $conn = Pg::setdb($pghost, $pgport, $pgoptions, $pgtty, $dbname)
 
@@ -303,11 +202,6 @@ properly made.
 Returns a reference to a hash containing as keys all possible options for 
 connectdb(). The values are the current defaults. This function differs from 
 his C-counterpart, which returns the complete conninfoOption structure. 
-
-    PQfinish($conn)
-
-Old style only !
-Closes the connection to the backend and frees the connection data structure. 
 
     $conn->reset
 
@@ -384,11 +278,8 @@ Disables tracing.
 Submits a query to the backend. The return value is a pointer to 
 the PGresult structure, which contains the complete query-result 
 returned by the backend. In case of failure, the pointer points 
-to an empty structure. In this, the perl implementation differs 
-from the C-implementation. Using the old style, even the empty 
-structure has to be freed using PQfree. Before using $result you 
-should call resultStatus to ensure, that the query was 
-properly executed. 
+to an empty structure. Before using $result you should call 
+resultStatus to ensure, that the query was properly executed. 
 
     ($table, $pid) = $conn->notifies
 
@@ -551,14 +442,8 @@ Returns the length of the value for a given tuple and field.
 
 Returns the NULL status for a given tuple and field. 
 
-    PQclear($result)
-
-Old style only !
-Frees all memory of the given result. 
-
     $res->fetchrow
 
-New style only ! 
 Fetches the next row from the server and returns NULL if all rows 
 have been processed. Columns which have NULL as value will be set to C<undef>.
 
@@ -587,8 +472,11 @@ Kept for backward compatibility. Use print.
 These functions provide file-oriented access to user data. 
 The large object interface is modeled after the Unix file 
 system interface with analogies of open, close, read, write, 
-lseek, tell. In order to get a consistent naming, all function 
-names have been prepended with 'PQ' (old style only). 
+lseek, tell. 
+
+Starting with postgresql-6.5 it is required to use large objects 
+only inside a transaction ! See eg/lo_demo.pl for an example, 
+how to handle large objects.
 
     $lobj_fd = $conn->lo_open($lobjId, $mode)
 
@@ -653,6 +541,6 @@ Returns -1 upon failure, 1 otherwise.
 
 =head1 SEE ALSO
 
-L<libpq>, L<large_objects>
+PostgreSQL Programmer's Guide, Large Objects and libpq
 
 =cut

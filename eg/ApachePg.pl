@@ -1,12 +1,15 @@
 #!/usr/local/bin/perl
 
-# $Id: ApachePg.pl,v 1.6 1998/09/11 18:13:51 mergl Exp $
+# $Id: ApachePg.pl,v 1.8 2000/04/04 19:20:02 mergl Exp $
 
+# don't forget to create in postgres the user who is running 
+# the httpd, eg 'createuser nobody' !
+# 
 # demo script, tested with:
-#  - PostgreSQL-6.4
-#  - apache_1.3.1
-#  - mod_perl-1.15
-#  - perl5.005_02
+#  - postgresql-7.0
+#  - apache_1.3.12
+#  - mod_perl-1.22
+#  - perl5.6.0
 
 use CGI;
 use Pg;

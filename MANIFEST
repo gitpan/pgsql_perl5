@@ -5,7 +5,6 @@ Pg.pm
 Pg.xs
 README
 eg/ApachePg.pl
-eg/example.newstyle
-eg/example.oldstyle
+eg/example.pl
 test.pl
 typemap
